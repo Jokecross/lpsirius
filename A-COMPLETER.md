@@ -5,8 +5,8 @@
 - [ ] **Vidéo d'ouverture** 16:9 (Vimeo, YouTube ou MP4) + **image d'attente** sombre → `VSL`
 - [x] Photo de profil → `img/anthony-profil.webp` (original dans `photos-brutes/`)
 - [x] Photos « Le constat » (Porsche, villa) et « Qui est Anthony » (McLaren) → `img/` (originaux dans `photos-brutes/`). Contraires à la règle « pas de voiture » du brief, choix de Martin le 28/10 (la règle n'est pas dans design.md)
-- [ ] **Chiffres réels** (abonnés, membres Digital Circle…) si on veut remplacer les 3 chiffres
-      actuels, tirés du brief : 7 jours, 4 services, coach 24h/24
+- [ ] **Chiffres réels** (abonnés, membres IA Money Club…) si on veut remplacer les 3 chiffres
+      actuels, tirés du brief : 7 jours, 5 services, coach 24h/24
 - [ ] **Citation** (section « Qui est Anthony ») : une vraie phrase d'Anthony. Affichée en attendant, à lui faire
       valider : « Le premier client, c'est le plus dur. Après, tu sais faire. »
 - [ ] **Son parcours** en 3 phrases , écrit ou validé par lui. Aucun chiffre

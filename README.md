@@ -1,6 +1,6 @@
 # Page de vente — Anthony Sirius, premier client en 7 jours
 
-Page de vente d'Anthony Sirius (SIRIUS LIFE, Digital Circle). Un seul objectif : le
+Page de vente d'Anthony Sirius (SIRIUS LIFE, IA Money Club). Un seul objectif : le
 formulaire. Un setter rappelle le lead dans les 10 minutes, puis lui ouvre l'espace membre.
 
 Même structure et même logique que nos pages clients (JVJ, Marcus, Mexed, Maxence),
@@ -30,7 +30,7 @@ puis http://localhost:8197. Les liens courts `/nom` ne marchent qu'une fois sur 
 Bandeau rouge → hero (profil, badge « Nouveau », titre avec « en 7 jours. » en aplat
 rouge, VSL 16:9 encadrée, CTA) → 3 chiffres → carte « Le constat » (lettre signée) →
 carte d'offre « Ce que tu reçois » (Inclus + « le prix d'un resto ») → bandeau qui
-défile → les 4 services → les 7 jours sur un rail qui se remplit → pour qui →
+défile → les 5 services (sites, apps, fiches Google, pubs, contenu IA) → les 7 jours sur un rail qui se remplit → pour qui →
 3 étapes → qui est Anthony (+ citation) → FAQ en cartes → carte finale rouge → pied de page.
 Formulaire en modale (`#formulaire` dans l'adresse l'ouvre à l'arrivée), message
 « C'est noté. » dans la modale après l'envoi. Barre fixe en bas sur mobile.
