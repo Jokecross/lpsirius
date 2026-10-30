@@ -16,6 +16,8 @@ captures/       captures ordi 1440 et mobile 390
 A-COMPLETER.md  tout ce qui attend un contenu réel
 ```
 
+La réservation des appels de l'équipe Skool est un site à part : `~/Reservation Sirius`.
+
 ## En local
 
 ```

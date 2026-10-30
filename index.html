@@ -892,8 +892,8 @@ html.js .r.vu{opacity:1;transform:none}
    La clé anon est PUBLIQUE par conception : la sécurité vient des règles
    RLS (insertion seule). Jamais la clé service_role ici. Tant que c'est
    vide, le formulaire n'envoie rien et le dit. */
-var SUPABASE_URL      = '';   // [À FOURNIR]
-var SUPABASE_ANON_KEY = '';   // [À FOURNIR]
+var SUPABASE_URL      = 'https://mmpazpnzkmianenkfyiv.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tcGF6cG56a21pYW5lbmtmeWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDgwOTcsImV4cCI6MjEwODg4NDA5N30.UhmwlOXXjj-q6MB1qR_uBNCd7anEkgYdk2Egp_9R6RA';
 
 /* Chaque lead part avec cette source. */
 var SOURCE = 'anthony-sirius';
@@ -905,12 +905,12 @@ var COLONNES_SUIVI = false;
 
 /* « Ta situation aujourd'hui » n'a pas de colonne dans les templates.
    true : envoie la colonne `situation` (à créer d'abord). */
-var COLONNE_SITUATION = false;
+var COLONNE_SITUATION = true;
 
 /* La VSL, en 16:9. Remplir UN des trois : identifiant Vimeo (chiffres
    seuls), identifiant YouTube, ou chemin d'un MP4 servi par le site.
    `affiche` : image d'attente facultative (WebP, sombre). */
-var VSL = { vimeo: '', youtube: '', fichier: '', affiche: '' };   // [À FOURNIR]
+var VSL = { vimeo: '', youtube: '', fichier: '/videos/vsl-sirius.mp4', affiche: '/img/vsl-affiche.webp' };
 
 /* Pixels de conversion : vides = rien n'est chargé.
    Meta : PageView au chargement, Lead à l'envoi. TikTok : page(), SubmitForm. */
