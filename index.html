@@ -193,6 +193,20 @@ h1{margin-top:22px;font-size:clamp(33px, 9.6vw, 92px);line-height:1.12;text-wrap
 }
 .vsl-lecture svg{width:22px;height:24px;fill:var(--blanc);margin-left:4px}
 .vsl-affiche:hover .vsl-lecture{transform:scale(1.05)}
+/* Lecture automatique, muette : un grand bouton pour remettre le son. */
+.vsl-muet{
+  position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;cursor:pointer;background:rgba(5,6,7,.18);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:9%;color:var(--blanc);font-family:var(--font-ui);
+}
+.vsl-muet-bouton{
+  display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 22px;background:var(--rouge);
+  box-shadow:0 18px 40px -16px rgba(0,0,0,.7);font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase;
+  animation:vsl-pulse 1.6s ease-in-out infinite;
+}
+.vsl-muet-bouton .i{width:34px;height:34px;stroke-width:2}
+.vsl-muet-bouton small{font-size:11px;letter-spacing:.1em;font-weight:400;opacity:.85}
+@keyframes vsl-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){ .vsl-muet-bouton{animation:none} }
 .vsl-affiche[aria-disabled="true"] .vsl-lecture,.vsl-affiche[aria-disabled="true"] .vsl-son{display:none}
 .vsl-legende{position:absolute;left:0;right:0;bottom:18px;padding:0 16px;text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--texte-3)}
 .hero .bloc-cta{margin-top:36px}
@@ -487,6 +501,10 @@ html.js .r.vu{opacity:1;transform:none}
   .vsl-chapitre span{font-size:8px;letter-spacing:.24em}
   .vsl-son{top:10px;right:10px;padding:5px 9px;font-size:11px}
   .vsl-lecture{width:64px;height:64px;margin:-32px 0 0 -32px}
+  .vsl-muet{padding-bottom:6%}
+  .vsl-muet-bouton{flex-direction:row;padding:10px 14px;font-size:11px;gap:8px}
+  .vsl-muet-bouton .i{width:20px;height:20px}
+  .vsl-muet-bouton small{display:none}
   .vsl-legende{bottom:10px;font-size:9px}
   .hero .bouton{width:100%}
   /* Le libellé tient sur une ligne à 390 px. */
@@ -1112,12 +1130,13 @@ function messageHorsHoraires(){
   if (VSL.affiche) affiche.style.backgroundImage = 'url("' + VSL.affiche + '")';
   if (aUneVideo) document.getElementById('vslLegende').textContent = '';
   else { affiche.setAttribute('aria-disabled', 'true'); affiche.setAttribute('aria-label', 'Vidéo à venir'); }
-  affiche.addEventListener('click', function(){
+  function lancer(){
     if (!aUneVideo) return;
     var el;
     if (VSL.fichier){
       el = document.createElement('video');
       el.src = VSL.fichier; el.controls = true; el.autoplay = true; el.playsInline = true;
+      if (VSL.affiche) el.poster = VSL.affiche;
     } else {
       el = document.createElement('iframe');
       el.allow = 'autoplay; fullscreen; picture-in-picture';
@@ -1127,9 +1146,49 @@ function messageHorsHoraires(){
         ? 'https://player.vimeo.com/video/' + encodeURIComponent(VSL.vimeo) + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1'
         : 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(VSL.youtube) + '?autoplay=1&rel=0&playsinline=1';
     }
+    var cadre = affiche.parentNode;
+    cadre.querySelectorAll('video, .vsl-muet').forEach(function(x){ x.remove(); });
     affiche.replaceWith(el);
     suivre('VSL lancée');
-  });
+  }
+  affiche.addEventListener('click', lancer);
+
+  /* La vidéo démarre seule dès l'arrivée. Les navigateurs ne l'acceptent
+     qu'en muet : elle tourne sans le son sous un grand bouton « Active le
+     son ». Au clic, elle repart du début, avec le son. Si le navigateur
+     refuse quand même (économie d'énergie sur iPhone…), on garde l'image
+     et son bouton lecture. */
+  if (VSL.fichier){
+    var muette = document.createElement('video');
+    muette.src = VSL.fichier; muette.muted = true; muette.defaultMuted = true;
+    muette.autoplay = true; muette.playsInline = true; muette.loop = true; muette.preload = 'auto';
+    muette.setAttribute('muted', ''); muette.setAttribute('playsinline', '');
+    if (VSL.affiche) muette.poster = VSL.affiche;
+    var boutonSon = document.createElement('button');
+    boutonSon.type = 'button'; boutonSon.className = 'vsl-muet';
+    boutonSon.setAttribute('aria-label', 'Activer le son et relancer la vidéo');
+    boutonSon.innerHTML = '<span class="vsl-muet-bouton"><svg class="i"><use href="#i-son"/></svg>Clique pour activer le son<small>La vidéo repart du début</small></span>';
+    var essaiAuto = muette.play();
+    if (essaiAuto && essaiAuto.then){
+      // Elle n'apparaît qu'une fois partie : jusque-là, l'image reste.
+      affiche.parentNode.insertBefore(muette, affiche);
+      muette.style.visibility = 'hidden';
+      essaiAuto.then(function(){
+        muette.style.visibility = '';
+        affiche.style.display = 'none';
+        affiche.parentNode.appendChild(boutonSon);
+        suivre('VSL lecture auto');
+      }).catch(function(){ muette.remove(); });
+    }
+    boutonSon.addEventListener('click', function(){
+      muette.loop = false; muette.muted = false; muette.controls = true;
+      muette.currentTime = 0;
+      var p = muette.play();
+      if (p && p.catch) p.catch(function(){});
+      boutonSon.remove(); affiche.remove();
+      suivre('VSL son activé');
+    });
+  }
 
   /* ---------------- Apparition douce, une seule fois ---------------- */
   var aVoir = document.querySelectorAll('.r');
