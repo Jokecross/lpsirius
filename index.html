@@ -1130,13 +1130,41 @@ function messageHorsHoraires(){
   if (VSL.affiche) affiche.style.backgroundImage = 'url("' + VSL.affiche + '")';
   if (aUneVideo) document.getElementById('vslLegende').textContent = '';
   else { affiche.setAttribute('aria-disabled', 'true'); affiche.setAttribute('aria-label', 'Vidéo à venir'); }
+  /* La VSL se regarde d'une traite : pas de commandes, pas de pause, pas
+     d'avance rapide. Une pause venue d'ailleurs (touches média, écran
+     verrouillé) est reprise dès que la page est visible ; un saut en avant
+     ramène là où on en était. Revenir en arrière reste permis. */
+  // Jusqu'où la vidéo a déjà été lue (ses plages jouées).
+  function dejaVu(v){
+    var max = 0;
+    for (var i = 0; i < v.played.length; i++) max = Math.max(max, v.played.end(i));
+    return max;
+  }
+  function verrouiller(v){
+    var vu = 0;
+    v.controls = false;
+    v.disablePictureInPicture = true;
+    v.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback noplaybackrate');
+    v.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    v.addEventListener('timeupdate', function(){ if (!v.seeking) vu = Math.max(vu, dejaVu(v)); });
+    v.addEventListener('seeking', function(){
+      var limite = Math.max(vu, dejaVu(v));
+      if (v.currentTime > limite + 1) v.currentTime = limite;
+    });
+    v.addEventListener('pause', function(){ if (!v.ended && !document.hidden) v.play().catch(function(){}); });
+    document.addEventListener('visibilitychange', function(){
+      if (!document.hidden && v.paused && !v.ended && v.isConnected) v.play().catch(function(){});
+    });
+  }
+
   function lancer(){
     if (!aUneVideo) return;
     var el;
     if (VSL.fichier){
       el = document.createElement('video');
-      el.src = VSL.fichier; el.controls = true; el.autoplay = true; el.playsInline = true;
+      el.src = VSL.fichier; el.autoplay = true; el.playsInline = true;
       if (VSL.affiche) el.poster = VSL.affiche;
+      verrouiller(el);
     } else {
       el = document.createElement('iframe');
       el.allow = 'autoplay; fullscreen; picture-in-picture';
@@ -1181,7 +1209,8 @@ function messageHorsHoraires(){
       }).catch(function(){ muette.remove(); });
     }
     boutonSon.addEventListener('click', function(){
-      muette.loop = false; muette.muted = false; muette.controls = true;
+      muette.loop = false; muette.muted = false;
+      verrouiller(muette);
       muette.currentTime = 0;
       var p = muette.play();
       if (p && p.catch) p.catch(function(){});
