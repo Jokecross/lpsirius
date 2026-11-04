@@ -2,7 +2,7 @@
 
 ## Contenus d'Anthony
 
-- [x] **Vidéo d’ouverture** : videos/vsl-sirius.mp4 (1080p, 19,7 Mo, depuis « V1 For claude.mov » le 30/10) + img/vsl-affiche.webp. Cache 7 j : renommer le fichier si la vidéo change
+- [x] **Vidéo d’ouverture** : videos/vsl-sirius-02.mp4 (1080p, depuis « video 02 - final.mov » le 03/11) + img/vsl-affiche-02.webp. Cache 7 j : renommer le fichier si la vidéo change
 - [x] Photo de profil → `img/anthony-profil.webp` (original dans `photos-brutes/`)
 - [x] Photos « Le constat » (Porsche, villa) et « Qui est Anthony » (McLaren) → `img/` (originaux dans `photos-brutes/`). Contraires à la règle « pas de voiture » du brief, choix de Martin le 28/10 (la règle n'est pas dans design.md)
 - [ ] **Chiffres réels** (abonnés, membres IA Money Club…) si on veut remplacer les 3 chiffres
