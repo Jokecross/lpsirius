@@ -476,6 +476,16 @@ select.saisie option{background:var(--noir)}
 .hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 .erreur{margin-top:16px;border-left:3px solid var(--rouge);padding:2px 0 2px 12px;font-size:14px}
 #envoyer{margin-top:20px;width:100%}
+.modal-retour{display:flex;align-items:center;gap:6px;min-height:44px;background:none;border:0;padding:0;cursor:pointer;font:600 14px/1 inherit;font-family:inherit;color:var(--texte-2)}
+.recap{margin:16px 0 0;padding:14px 16px;border:1px solid var(--bord-2);display:grid;gap:8px}
+.recap div{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.recap dt{color:var(--texte-2)}
+.recap dd{margin:0;font-weight:600;overflow-wrap:anywhere;text-align:right}
+.paie-module{margin-top:16px;min-height:180px}
+.paie-attente{display:grid;place-items:center;min-height:180px;font-size:14px;color:var(--texte-2)}
+#payer{margin-top:16px;width:100%;justify-content:center}
+#payer:disabled{opacity:.45;cursor:not-allowed}
+.paie-note{margin-top:12px;font-size:13px;color:var(--texte-2);text-align:center}
 #envoyer[aria-busy="true"]{cursor:wait;opacity:.85}
 .modal .mention{margin-top:14px;text-align:center;font-size:12px;color:var(--texte-3)}
 .merci{text-align:center;padding:24px 0 8px;outline:none}
@@ -772,7 +782,7 @@ html.js .r.vu{opacity:1;transform:none}
     </div>
     <div class="faq" id="faq">
       <details class="r"><summary>Je ne sais pas coder, c’est un problème&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Les sites et les apps se construisent avec l’IA, sans écrire de code.</p></details>
-      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel.</p></details>
+      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel. Tu réserves cet appel pour 9,99&nbsp;€, remboursés si tu réponds.</p></details>
       <details class="r"><summary>Combien de temps par jour&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Une à deux heures par jour pendant 7 jours.</p></details>
       <details class="r"><summary>Il me faut une entreprise&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Pour facturer ton premier client, il te faudra un statut, par exemple une micro-entreprise. On t’explique comment faire.</p></details>
       <details class="r"><summary>C’est garanti&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Le programme te donne la méthode, les outils et les scripts. Le résultat dépend de ton travail.</p></details>
@@ -826,7 +836,7 @@ html.js .r.vu{opacity:1;transform:none}
   <div class="modal" id="formulaire">
     <button type="button" class="modal-fermer" id="modalFermer" aria-label="Fermer"><svg class="i"><use href="#i-croix"/></svg></button>
     <div id="blocFormulaire">
-      <p class="etiquette">Premier client en 7 jours</p>
+      <p class="etiquette" id="etiquetteForm">Premier client en 7 jours</p>
       <h2 id="modalTitre">Laisse tes infos. On t’appelle dans les <span class="aplat">10 minutes.</span></h2>
       <p class="sous-titre">Un membre de l’équipe d’Anthony voit avec toi si c’est fait pour toi.</p>
       <form id="form" novalidate>
@@ -888,6 +898,23 @@ html.js .r.vu{opacity:1;transform:none}
       </form>
     </div>
 
+    <!-- Le paiement Whop, dans la même fenêtre -->
+    <div id="blocPaiement" hidden>
+      <button type="button" class="modal-retour" id="paiementRetour">← Retour</button>
+      <p class="etiquette">Étape 2 — Paiement</p>
+      <h2>Réserve ton appel. <span class="aplat">9,99&nbsp;€.</span></h2>
+      <dl class="recap">
+        <div><dt>Prénom</dt><dd id="recapPrenom"></dd></div>
+        <div><dt>E-mail</dt><dd id="recapEmail"></dd></div>
+        <div><dt>Téléphone</dt><dd id="recapTel"></dd></div>
+      </dl>
+      <div class="paie-module" id="paiementModule"><p class="paie-attente">Chargement du paiement sécurisé…</p></div>
+      <p class="erreur" id="paiementErreur" role="alert" hidden></p>
+      <button type="button" class="bouton" id="payer" disabled>Payer 9,99&nbsp;€</button>
+      <p class="paie-note"><strong>Réponds à notre appel.</strong> Tes 9,99&nbsp;€ te sont remboursés si tu réponds. Sinon, ils ne sont pas remboursables.</p>
+      <p class="paie-note">Paiement sécurisé par Whop. Tes coordonnées bancaires ne passent pas par nous. En payant, tu acceptes nos <a href="#" data-lien="cgv" target="_blank" rel="noopener">conditions de vente</a>.</p>
+    </div>
+
     <div class="merci" id="blocMerci" hidden tabindex="-1" role="status">
       <span class="rond-merci"><svg class="i"><use href="#i-coche"/></svg></span>
       <h2>C’est noté.</h2>
@@ -911,6 +938,11 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 /* Chaque lead part avec cette source. */
 var SOURCE = 'anthony-sirius';
+/* L'appel à 9,99 € : le plan Whop (plan_…, Whop → Checkout links → ⋯ → Details) et
+   l'entreprise (biz_…, dans l'adresse du tableau de bord). Vides = pas de
+   paiement : le lead part directement chez les setters. */
+var WHOP_PLAN_ID = 'plan_7Kxovd8JdBbBC';
+var WHOP_ACCOUNT_ID = 'biz_Ves4O7SXnR8wVU';
 
 /* false : schéma des templates tel quel, `ref` et UTM partent dans
    `page_url`. true : envoie les colonnes ref, utm_source, utm_medium,
@@ -1000,7 +1032,15 @@ function versE164(indicatif, brut){
   return chiffres ? '+' + indicatif + chiffres : '';
 }
 
-function envoyerLead(lead){
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+    var r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+  });
+}
+
+function envoyerLead(lead, extra){
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY){
     console.error('Supabase non configuré : renseigner SUPABASE_URL et SUPABASE_ANON_KEY.');
     return Promise.reject(new Error('config'));
@@ -1015,6 +1055,7 @@ function envoyerLead(lead){
   };
   if (COLONNES_SUIVI) for (var k in lead.suivi) corps[k] = lead.suivi[k] || null;
   if (COLONNE_SITUATION) corps.situation = lead.situation;
+  if (extra) for (var c in extra) corps[c] = extra[c];
   return fetch(SUPABASE_URL + '/rest/v1/leads', {
     method: 'POST',
     headers: {
@@ -1303,6 +1344,12 @@ function messageHorsHoraires(){
   var apercu = document.getElementById('telApercu');
   var erreur = document.getElementById('erreur');
   var bouton = document.getElementById('envoyer');
+  var PAIEMENT = !!WHOP_PLAN_ID && !!WHOP_ACCOUNT_ID;
+  var paiement = null;
+  if (PAIEMENT){
+    bouton.firstChild.textContent = 'Continuer ';
+    document.getElementById('etiquetteForm').textContent = 'Étape 1 — Tes coordonnées';
+  }
   var libelleBouton = bouton.innerHTML;
   var choix  = document.getElementById('situation');
   var CHAMPS = ['firstName', 'lastName', 'phone', 'email'];
@@ -1378,24 +1425,33 @@ function messageHorsHoraires(){
     };
     var leurre = document.getElementById('company').value.trim();
 
+    // Revenu en arrière sans rien changer : le lead existe déjà.
+    if (paiement && paiement.lead.email === lead.email && paiement.lead.phone === lead.phone){
+      afficherPaiement(lead, paiement.id);
+      return;
+    }
+
     // Bouton bloqué pendant l'envoi : pas de doublon.
     envoiEnCours = true;
     bouton.setAttribute('aria-busy', 'true');
     bouton.textContent = 'Envoi en cours…';
 
+    // Avec le paiement, le lead est créé en « opt-in » : il n'entre dans les
+    // Leads du jour que quand Whop confirme les 9,99 €.
+    var idLead = PAIEMENT && !leurre ? uuid() : null;
+
     // Champ leurre rempli = robot : on simule un succès sans rien enregistrer.
-    (leurre ? Promise.resolve() : envoyerLead(lead))
+    (leurre ? Promise.resolve() : envoyerLead(lead, idLead ? { id: idLead, vivier: 'optin' } : null))
       .then(function(){
         suivre('Formulaire envoyé');
         if (s.ref) suivre('Formulaire envoyé · ' + s.ref);
         if (!leurre) conversion();
-        var hors = messageHorsHoraires();
-        if (hors) document.getElementById('merciTexte').textContent = hors;
-        document.getElementById('blocFormulaire').hidden = true;
-        var merci = document.getElementById('blocMerci');
-        merci.hidden = false;
-        merci.focus({ preventScroll: true });
-        document.getElementById('formulaire').scrollTop = 0;
+        if (idLead){
+          envoiEnCours = false;
+          afficherPaiement(lead, idLead);
+        } else {
+          montrerMerci();
+        }
       })
       .catch(function(err){
         montrer(err && err.message === 'config'
@@ -1408,6 +1464,142 @@ function messageHorsHoraires(){
         bouton.innerHTML = libelleBouton;
       });
   });
+
+  function montrerMerci(){
+    var hors = messageHorsHoraires();
+    if (hors) document.getElementById('merciTexte').textContent = hors;
+    document.getElementById('blocFormulaire').hidden = true;
+    document.getElementById('blocPaiement').hidden = true;
+    var merci = document.getElementById('blocMerci');
+    merci.hidden = false;
+    merci.focus({ preventScroll: true });
+    document.getElementById('formulaire').scrollTop = 0;
+  }
+
+  /* Le paiement Whop, dans la fenêtre (Whop Elements). Le navigateur ne fait
+     que recueillir le moyen de paiement et en tirer un jeton ; c'est la
+     fonction whop-paiement, côté serveur, qui encaisse avec la clé API.
+     L'identifiant du lead part en metadata : le webhook le retrouve sans
+     erreur possible. */
+  var whopPret = null;
+  function chargerWhop(){
+    if (whopPret) return whopPret;
+    whopPret = new Promise(function(ok, ko){
+      var sc = document.createElement('script');
+      sc.src = 'https://cdn.whop.com/elements/amber/elements.js';
+      sc.setAttribute('data-whop-elements', '');
+      sc.onload = function(){
+        window.WhopElements
+          ? ok(window.WhopElements({ locale: 'fr', appearance: { theme: { appearance: 'dark', accentColor: 'red' } } }))
+          : ko(new Error('whop'));
+      };
+      sc.onerror = function(){ whopPret = null; ko(new Error('whop')); };
+      document.head.appendChild(sc);
+    });
+    return whopPret;
+  }
+  /* Après une étape bancaire (3D Secure), la banque renvoie ici. */
+  function urlRetour(){
+    var p = new URLSearchParams(location.search);
+    p.set('confirmation', '1');
+    return location.origin + location.pathname + '?' + p.toString();
+  }
+  var payer = document.getElementById('payer');
+  var libellePayer = payer.innerHTML;
+  var erreurPaiement = document.getElementById('paiementErreur');
+  function erreurPaie(msg){ erreurPaiement.textContent = msg; erreurPaiement.hidden = !msg; }
+
+  function afficherPaiement(lead, id){
+    suivre('Paiement affiché');
+    document.getElementById('blocFormulaire').hidden = true;
+    document.getElementById('blocPaiement').hidden = false;
+    document.getElementById('formulaire').scrollTop = 0;
+    document.getElementById('recapPrenom').textContent = lead.firstName;
+    document.getElementById('recapEmail').textContent  = lead.email;
+    document.getElementById('recapTel').textContent    = lead.phone;
+    erreurPaie('');
+    payer.disabled = true;
+    payer.innerHTML = libellePayer;
+    var zone = document.getElementById('paiementModule');
+    zone.innerHTML = '<p class="paie-attente">Chargement du paiement sécurisé…</p>';
+    chargerWhop().then(function(whop){
+      if (paiement && paiement.handle && paiement.handle.destroy) paiement.handle.destroy();
+      zone.innerHTML = '<div id="whopPaiement"></div><div id="whopMarque"></div>';
+      var handle = whop.payments.create({ accountId: WHOP_ACCOUNT_ID, plan: WHOP_PLAN_ID, returnUrl: urlRetour() });
+      handle.create('payment', {
+        fields: { billingDetails: 'minimal', phone: 'never' },
+        order: ['apple_pay', 'google_pay', 'card'],
+        onChange: function(e){ payer.disabled = !(e && e.complete); }
+      }).mount('#whopPaiement');
+      // Whop n'affiche le formulaire qu'une fois son bloc « Propulsé par
+      // Whop » monté : sans lui, il reste derrière l'écran de chargement.
+      handle.create('branding').mount('#whopMarque');
+      paiement = { lead: lead, id: id, whop: whop, handle: handle };
+    }).catch(function(){
+      zone.innerHTML = '';
+      paiement = { lead: lead, id: id };
+      erreurPaie('Le paiement ne s’est pas chargé. Vérifie ta connexion et réessaie.');
+    });
+  }
+
+  var PAYE = ['paid', 'succeeded', 'completed'], ECHEC = ['failed', 'canceled', 'void'];
+  payer.addEventListener('click', function(){
+    if (!paiement || !paiement.handle || payer.disabled) return;
+    var pa = paiement, l = pa.lead;
+    payer.disabled = true;
+    payer.textContent = 'Traitement en cours…';
+    erreurPaie('');
+    suivre('Paiement lancé');
+    pa.handle.createConfirmationToken({ billingDetails: {
+      email: l.email, name: (l.firstName + ' ' + l.lastName).trim(), phone: l.phone
+    } }).then(function(r){
+      return fetch(SUPABASE_URL + '/functions/v1/whop-paiement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+        body: JSON.stringify({ lead_id: pa.id, confirmation_token: r.confirmationToken, email: l.email, return_url: urlRetour() })
+      });
+    }).then(function(rep){
+      return rep.json().then(function(d){
+        if (!rep.ok) throw new Error(d && d.erreur ? d.erreur : 'paiement');
+        return d;
+      });
+    }).then(function(d){
+      var st = d.status || '';
+      if (ECHEC.indexOf(st) !== -1) throw new Error('Le paiement a été refusé. Réessaie.');
+      if (PAYE.indexOf(st) !== -1 || !d.client_secret) return { fini: true };
+      // 3D Secure ou autre étape demandée par la banque.
+      return pa.whop.payments.handleNextAction({ clientSecret: d.client_secret, returnUrl: urlRetour() })
+        .then(function(g){
+          if (g && g.redirected) return { redirige: true };
+          if (g && ECHEC.indexOf(g.status || '') !== -1) throw new Error((g.lastPaymentError && g.lastPaymentError.message) || 'Le paiement n’a pas abouti. Réessaie.');
+          return { fini: true };
+        });
+    }).then(function(r){
+      if (r.redirige) return;
+      suivre('Appel payé');
+      paiement = null;
+      montrerMerci();
+    }).catch(function(e){
+      erreurPaie(e && e.message && e.message.length > 12 ? e.message : 'Le paiement n’a pas abouti. Réessaie.');
+      payer.disabled = false;
+      payer.innerHTML = libellePayer;
+    });
+  });
+  document.getElementById('paiementRetour').addEventListener('click', function(){
+    document.getElementById('blocPaiement').hidden = true;
+    document.getElementById('blocFormulaire').hidden = false;
+  });
+
+  /* Retour de la banque : on rouvre la fenêtre sur le message de fin, et
+     l'adresse redevient propre. */
+  if (new URLSearchParams(location.search).get('confirmation') === '1'){
+    var propre = new URLSearchParams(location.search);
+    propre.delete('confirmation');
+    history.replaceState(null, '', location.pathname + (propre.toString() ? '?' + propre.toString() : ''));
+    suivre('Appel payé');
+    montrerMerci();
+    ouvrir();
+  }
 
   CHAMPS.forEach(function(id){
     document.getElementById(id).addEventListener('input', function(){ this.classList.remove('invalide'); });
