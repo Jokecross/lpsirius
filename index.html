@@ -1161,6 +1161,24 @@ function messageHorsHoraires(){
   CLES.forEach(function(k){ document.getElementById('h_' + k).value = SUIVI[k] || ''; });
   if (SUIVI.ref) suivre('Visite · ' + SUIVI.ref);
 
+  /* Le compteur de visites de l'onglet Sources du CRM : un identifiant au
+     hasard gardé dans le navigateur, ni nom ni adresse IP. Les robots et
+     les essais en local ne comptent pas. */
+  (function(){
+    if (!SUPABASE_URL || navigator.webdriver || /Headless/.test(navigator.userAgent)) return;
+    if (/^(localhost|127\.)/.test(location.hostname)) return;
+    var id;
+    try {
+      id = localStorage.getItem('visiteur');
+      if (!id){ id = uuid(); localStorage.setItem('visiteur', id); }
+    } catch(e){ id = uuid(); }
+    fetch(SUPABASE_URL + '/rest/v1/rpc/visite_compter', {
+      method: 'POST', keepalive: true,
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ p_visiteur: id, p_origine: SUIVI.utm_source || SUIVI.ref || 'direct' })
+    }).catch(function(){});
+  })();
+
   /* ---------------- La VSL : rien n'est chargé avant le clic ---------------- */
   var affiche = document.getElementById('vslAffiche');
   var aUneVideo = !!(VSL.vimeo || VSL.youtube || VSL.fichier);
