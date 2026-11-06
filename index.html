@@ -482,6 +482,8 @@ select.saisie option{background:var(--noir)}
 .recap div{display:flex;justify-content:space-between;gap:12px;font-size:14px}
 .recap dt{color:var(--texte-2)}
 .recap dd{margin:0;font-weight:600;overflow-wrap:anywhere;text-align:right}
+.paie-alerte{margin-top:16px;padding:12px 14px;border:1px solid var(--rouge);border-left-width:4px;background:rgba(174,0,0,.14);font-size:14px;line-height:1.45}
+.paie-alerte strong{color:var(--blanc)}
 .paie-module{margin-top:16px;min-height:180px}
 .paie-attente{display:grid;place-items:center;min-height:180px;font-size:14px;color:var(--texte-2)}
 #payer{margin-top:16px;width:100%;justify-content:center}
@@ -908,6 +910,7 @@ html.js .r.vu{opacity:1;transform:none}
         <div><dt>E-mail</dt><dd id="recapEmail"></dd></div>
         <div><dt>Téléphone</dt><dd id="recapTel"></dd></div>
       </dl>
+      <p class="paie-alerte"><strong>Ton téléphone va sonner juste après le paiement.</strong> Depuis un numéro inconnu&nbsp;: décroche, c’est aussi ce qui te fait rembourser tes 9,99&nbsp;€.</p>
       <div class="paie-module" id="paiementModule"><p class="paie-attente">Chargement du paiement sécurisé…</p></div>
       <p class="erreur" id="paiementErreur" role="alert" hidden></p>
       <button type="button" class="bouton" id="payer" disabled>Payer 9,99&nbsp;€</button>
@@ -917,8 +920,8 @@ html.js .r.vu{opacity:1;transform:none}
 
     <div class="merci" id="blocMerci" hidden tabindex="-1" role="status">
       <span class="rond-merci"><svg class="i"><use href="#i-coche"/></svg></span>
-      <h2>C’est noté.</h2>
-      <p id="merciTexte">Garde ton téléphone pas loin. Un membre de l’équipe d’Anthony t’appelle dans les 10 minutes. Le numéro peut t’être inconnu&nbsp;: décroche.</p>
+      <h2 style="line-height:1.35">C’est payé.<br><span class="aplat">Ton téléphone va sonner.</span></h2>
+      <p id="merciTexte">Garde-le en main. Un membre de l’équipe d’Anthony t’appelle dans les prochaines minutes, depuis un numéro inconnu&nbsp;: <strong>décroche</strong>.</p>
     </div>
   </div>
 </div>
