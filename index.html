@@ -959,8 +959,9 @@ var COLONNE_SITUATION = true;
 var VSL = { vimeo: '', youtube: '', fichier: '/videos/vsl-sirius-02.mp4', affiche: '/img/vsl-affiche-02.webp' };
 
 /* Pixels de conversion : vides = rien n'est chargé.
-   Meta : PageView au chargement, Lead à l'envoi. TikTok : page(), SubmitForm. */
-var PIXELS = { meta: '', tiktok: '' };   // [À FOURNIR]
+   Meta : PageView au chargement, Lead à l'envoi, Purchase au paiement.
+   TikTok : page(), SubmitForm. */
+var PIXELS = { meta: '2199469941000913', tiktok: '' };
 
 /* Pages légales. */
 var LIENS = { mentions: '/legal#mentions', cgv: '/legal#cgv', confidentialite: '/legal#confidentialite' };
@@ -1119,6 +1120,9 @@ function messageHorsHoraires(){
   function conversion(){
     if (window.fbq) fbq('track', 'Lead');
     if (window.ttq) ttq.track('SubmitForm');
+  }
+  function conversionPayee(){
+    if (window.fbq) fbq('track', 'Purchase', { value: 9.99, currency: 'EUR' });
   }
 
   /* ---------------- Liens légaux ---------------- */
@@ -1595,6 +1599,7 @@ function messageHorsHoraires(){
     }).then(function(r){
       if (r.redirige) return;
       suivre('Appel payé');
+      conversionPayee();
       paiement = null;
       montrerMerci();
     }).catch(function(e){
@@ -1615,6 +1620,7 @@ function messageHorsHoraires(){
     propre.delete('confirmation');
     history.replaceState(null, '', location.pathname + (propre.toString() ? '?' + propre.toString() : ''));
     suivre('Appel payé');
+    conversionPayee();
     montrerMerci();
     ouvrir();
   }
