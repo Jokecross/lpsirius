@@ -1124,8 +1124,10 @@ function messageHorsHoraires(){
     if (window.fbq) fbq('track', 'Lead');
     if (window.ttq) ttq.track('SubmitForm');
   }
-  function conversionPayee(){
-    if (window.fbq) fbq('track', 'Purchase', { value: 9.99, currency: 'EUR' });
+  /* Le même identifiant que l'envoi du serveur (whop-webhook) : Meta ne
+     compte le paiement qu'une fois. */
+  function conversionPayee(idLead){
+    if (window.fbq) fbq('track', 'Purchase', { value: 9.99, currency: 'EUR' }, idLead ? { eventID: 'paye-' + idLead } : {});
   }
 
   /* ---------------- Liens légaux ---------------- */
@@ -1575,6 +1577,8 @@ function messageHorsHoraires(){
     payer.textContent = 'Traitement en cours…';
     erreurPaie('');
     suivre('Paiement lancé');
+    // Après une étape bancaire, la page se recharge : on garde le lead.
+    try { sessionStorage.setItem('leadPaiement', pa.id); } catch(e){}
     pa.handle.createConfirmationToken({ billingDetails: {
       email: l.email, name: (l.firstName + ' ' + l.lastName).trim(), phone: l.phone
     } }).then(function(r){
@@ -1602,7 +1606,7 @@ function messageHorsHoraires(){
     }).then(function(r){
       if (r.redirige) return;
       suivre('Appel payé');
-      conversionPayee();
+      conversionPayee(pa.id);
       paiement = null;
       montrerMerci();
     }).catch(function(e){
@@ -1623,7 +1627,9 @@ function messageHorsHoraires(){
     propre.delete('confirmation');
     history.replaceState(null, '', location.pathname + (propre.toString() ? '?' + propre.toString() : ''));
     suivre('Appel payé');
-    conversionPayee();
+    var leadPaye = null;
+    try { leadPaye = sessionStorage.getItem('leadPaiement'); } catch(e){}
+    conversionPayee(leadPaye);
     montrerMerci();
     ouvrir();
   }
