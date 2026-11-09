@@ -784,10 +784,10 @@ html.js .r.vu{opacity:1;transform:none}
     </div>
     <div class="faq" id="faq">
       <details class="r"><summary>Je ne sais pas coder, c’est un problème&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Les sites et les apps se construisent avec l’IA, sans écrire de code.</p></details>
-      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel. Tu réserves cet appel pour 9,99&nbsp;€, remboursés si tu réponds.</p></details>
+      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel. Tu réserves cet appel pour 9,99&nbsp;€, remboursés si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours.</p></details>
       <details class="r"><summary>Combien de temps par jour&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Une à deux heures par jour pendant 7 jours.</p></details>
       <details class="r"><summary>Il me faut une entreprise&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Pour facturer ton premier client, il te faudra un statut, par exemple une micro-entreprise. On t’explique comment faire.</p></details>
-      <details class="r"><summary>C’est garanti&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Le programme te donne la méthode, les outils et les scripts. Le résultat dépend de ton travail. Ce que je te rembourse, ce sont les 9,99&nbsp;€ de ta réservation, si tu réponds à notre appel.</p></details>
+      <details class="r"><summary>C’est garanti&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Le programme te donne la méthode, les outils et les scripts. Le résultat dépend de ton travail. Ce que je te rembourse, ce sont les 9,99&nbsp;€ de ta réservation, si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours (conditions dans nos CGV).</p></details>
       <details class="r"><summary>Qui va m’appeler&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Un membre de l’équipe d’Anthony, dans les 10 minutes, pour répondre à tes questions et voir si c’est fait pour toi.</p></details>
     </div>
   </div>
@@ -910,11 +910,11 @@ html.js .r.vu{opacity:1;transform:none}
         <div><dt>E-mail</dt><dd id="recapEmail"></dd></div>
         <div><dt>Téléphone</dt><dd id="recapTel"></dd></div>
       </dl>
-      <p class="paie-alerte"><strong>Ton téléphone va sonner juste après le paiement.</strong> Depuis un numéro inconnu&nbsp;: décroche, c’est aussi ce qui te fait rembourser tes 9,99&nbsp;€.</p>
+      <p class="paie-alerte"><strong>Ton téléphone va sonner juste après le paiement.</strong> Depuis un numéro inconnu&nbsp;: décroche, c’est l’une des conditions de ta garantie.</p>
       <div class="paie-module" id="paiementModule"><p class="paie-attente">Chargement du paiement sécurisé…</p></div>
       <p class="erreur" id="paiementErreur" role="alert" hidden></p>
       <button type="button" class="bouton" id="payer" disabled>Payer 9,99&nbsp;€</button>
-      <p class="paie-note"><strong>Réponds à notre appel.</strong> Tes 9,99&nbsp;€ te sont remboursés si tu réponds. Sinon, ils ne sont pas remboursables.</p>
+      <p class="paie-note"><strong>Garantie 7 jours.</strong> Si tu n’as pas trouvé ton premier client au bout de 7 jours, tes 9,99&nbsp;€ te sont remboursés. <a href="#" data-lien="garantie" target="_blank" rel="noopener">Voir les conditions</a></p>
       <p class="paie-note">Paiement sécurisé par Whop. Tes coordonnées bancaires ne passent pas par nous. En payant, tu acceptes nos <a href="#" data-lien="cgv" target="_blank" rel="noopener">conditions de vente</a>.</p>
     </div>
 
@@ -967,7 +967,7 @@ var VSL = { vimeo: '', youtube: '', fichier: '/videos/vsl-sirius-02.mp4', affich
 var PIXELS = { meta: '2199469941000913', tiktok: '' };
 
 /* Pages légales. */
-var LIENS = { mentions: '/legal#mentions', cgv: '/legal#cgv', confidentialite: '/legal#confidentialite' };
+var LIENS = { mentions: '/legal#mentions', cgv: '/legal#cgv', confidentialite: '/legal#confidentialite', garantie: '/legal#garantie' };
 
 /* Horaires d'appel des setters, heure de Paris. Vide = « dans les
    10 minutes » à toute heure. jours : 0 = dimanche … 6 = samedi.
