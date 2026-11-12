@@ -918,6 +918,13 @@ html.js .r.vu{opacity:1;transform:none}
       <p class="paie-note">Paiement sécurisé par Whop. Tes coordonnées bancaires ne passent pas par nous. En payant, tu acceptes nos <a href="#" data-lien="cgv" target="_blank" rel="noopener">conditions de vente</a>.</p>
     </div>
 
+    <!-- Le paiement est vérifié auprès de la base avant d'afficher « C'est payé » -->
+    <div class="merci" id="blocVerif" hidden tabindex="-1" role="status" aria-live="polite">
+      <h2 id="verifTitre">On vérifie ton paiement…</h2>
+      <p id="verifTexte">Quelques secondes. Ne ferme pas cette page.</p>
+      <button type="button" class="bouton" id="verifReessayer" hidden style="margin-top:18px">Réessayer le paiement</button>
+    </div>
+
     <div class="merci" id="blocMerci" hidden tabindex="-1" role="status">
       <span class="rond-merci"><svg class="i"><use href="#i-coche"/></svg></span>
       <h2 style="line-height:1.35">C’est payé.<br><span class="aplat">Ton téléphone va sonner.</span></h2>
@@ -1497,6 +1504,7 @@ function messageHorsHoraires(){
     if (hors) document.getElementById('merciTexte').textContent = hors;
     document.getElementById('blocFormulaire').hidden = true;
     document.getElementById('blocPaiement').hidden = true;
+    document.getElementById('blocVerif').hidden = true;
     var merci = document.getElementById('blocMerci');
     merci.hidden = false;
     merci.focus({ preventScroll: true });
@@ -1570,6 +1578,53 @@ function messageHorsHoraires(){
   }
 
   var PAYE = ['paid', 'succeeded', 'completed'], ECHEC = ['failed', 'canceled', 'void'];
+
+  /* « C'est payé » ne s'affiche que quand la base a reçu la confirmation de
+     Whop (le webhook pose paye_at). Le navigateur peut croire un paiement
+     réussi alors qu'il ne l'est pas, surtout au retour d'une étape bancaire :
+     on demande donc à la base, toutes les 2 secondes pendant une minute. */
+  function verifierPaiement(idLead){
+    var bloc = document.getElementById('blocVerif'), titre = document.getElementById('verifTitre'),
+        texte = document.getElementById('verifTexte'), bouton = document.getElementById('verifReessayer');
+    document.getElementById('blocFormulaire').hidden = true;
+    document.getElementById('blocPaiement').hidden = true;
+    document.getElementById('blocMerci').hidden = true;
+    bloc.hidden = false; bouton.hidden = true;
+    titre.textContent = 'On vérifie ton paiement…';
+    texte.textContent = 'Quelques secondes. Ne ferme pas cette page.';
+    document.getElementById('formulaire').scrollTop = 0;
+    function pasConfirme(){
+      suivre('Paiement non confirmé');
+      titre.textContent = 'Ton paiement n’est pas confirmé';
+      texte.textContent = 'Nous n’avons pas reçu la confirmation de ton paiement. Si ta banque t’a débité, ne repaie pas : l’équipe vérifie et te rappelle. Sinon, réessaie.';
+      bouton.hidden = false;
+    }
+    if (!idLead) return pasConfirme();
+    var essais = 0;
+    (function demander(){
+      fetch(SUPABASE_URL + '/rest/v1/rpc/paiement_confirme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+        body: JSON.stringify({ p_lead: idLead })
+      }).then(function(r){ return r.ok ? r.json() : false; }).catch(function(){ return false; }).then(function(ok){
+        if (ok === true){
+          suivre('Appel payé');
+          conversionPayee(idLead);
+          try { sessionStorage.removeItem('leadPaiement'); } catch(e){}
+          paiement = null;
+          montrerMerci();
+        } else if (++essais < 30) setTimeout(demander, 2000);
+        else pasConfirme();
+      });
+    })();
+  }
+  document.getElementById('verifReessayer').addEventListener('click', function(){
+    document.getElementById('blocVerif').hidden = true;
+    if (paiement && paiement.handle){
+      document.getElementById('blocPaiement').hidden = false;
+      payer.disabled = false; payer.innerHTML = libellePayer; erreurPaie('');
+    } else document.getElementById('blocFormulaire').hidden = false;
+  });
   payer.addEventListener('click', function(){
     if (!paiement || !paiement.handle || payer.disabled) return;
     var pa = paiement, l = pa.lead;
@@ -1595,20 +1650,17 @@ function messageHorsHoraires(){
     }).then(function(d){
       var st = d.status || '';
       if (ECHEC.indexOf(st) !== -1) throw new Error('Le paiement a été refusé. Réessaie.');
-      if (PAYE.indexOf(st) !== -1 || !d.client_secret) return { fini: true };
+      if (PAYE.indexOf(st) !== -1 || !d.client_secret) return { aVerifier: true };
       // 3D Secure ou autre étape demandée par la banque.
       return pa.whop.payments.handleNextAction({ clientSecret: d.client_secret, returnUrl: urlRetour() })
         .then(function(g){
           if (g && g.redirected) return { redirige: true };
           if (g && ECHEC.indexOf(g.status || '') !== -1) throw new Error((g.lastPaymentError && g.lastPaymentError.message) || 'Le paiement n’a pas abouti. Réessaie.');
-          return { fini: true };
+          return { aVerifier: true };
         });
     }).then(function(r){
       if (r.redirige) return;
-      suivre('Appel payé');
-      conversionPayee(pa.id);
-      paiement = null;
-      montrerMerci();
+      verifierPaiement(pa.id);
     }).catch(function(e){
       erreurPaie(e && e.message && e.message.length > 12 ? e.message : 'Le paiement n’a pas abouti. Réessaie.');
       payer.disabled = false;
@@ -1626,12 +1678,10 @@ function messageHorsHoraires(){
     var propre = new URLSearchParams(location.search);
     propre.delete('confirmation');
     history.replaceState(null, '', location.pathname + (propre.toString() ? '?' + propre.toString() : ''));
-    suivre('Appel payé');
     var leadPaye = null;
     try { leadPaye = sessionStorage.getItem('leadPaiement'); } catch(e){}
-    conversionPayee(leadPaye);
-    montrerMerci();
     ouvrir();
+    verifierPaiement(leadPaye);
   }
 
   CHAMPS.forEach(function(id){
