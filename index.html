@@ -23,7 +23,10 @@
 <link rel="preload" href="fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin>
 <script>window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
-<script>document.documentElement.classList.add('js');</script>
+<script>document.documentElement.classList.add('js');
+/* Le lien gratuit /appel : même page, sans paiement. La classe est posée
+   avant l'affichage, pour que les textes du 9,99 € n'apparaissent jamais. */
+if (/^\/appel\/?$/i.test(location.pathname)) document.documentElement.classList.add('gratuit');</script>
 
 <style>
 /* ============================================================
@@ -492,6 +495,8 @@ select.saisie option{background:var(--noir)}
 #envoyer[aria-busy="true"]{cursor:wait;opacity:.85}
 .modal .mention{margin-top:14px;text-align:center;font-size:12px;color:var(--texte-3)}
 .merci{text-align:center;padding:24px 0 8px;outline:none}
+/* Lien gratuit /appel : chaque texte lié au 9,99 € a son pendant. */
+html.gratuit .si-payant,html:not(.gratuit) .si-gratuit{display:none}
 .rond-merci{width:64px;height:64px;margin:0 auto;display:grid;place-items:center;background:var(--rouge)}
 .rond-merci .i{width:28px;height:28px;stroke-width:2.5}
 .merci h2{margin-top:22px;padding:0}
@@ -571,7 +576,7 @@ html.js .r.vu{opacity:1;transform:none}
       </div>
     </div>
     <div class="r"><p class="badge"><span class="nouveau">Nouveau</span>Programme 7 jours</p></div>
-    <h1 class="r">Trouve ton <span class="pastille">premier</span><br><span class="pastille">client en 7&nbsp;jours</span><br>ou je te rembourse.</h1>
+    <h1 class="r">Trouve ton <span class="pastille">premier</span><br><span class="pastille">client en 7&nbsp;jours</span><br><span class="si-payant">ou je te rembourse.</span><span class="si-gratuit">On t’appelle gratuitement.</span></h1>
   </div>
 
   <div class="large">
@@ -784,10 +789,10 @@ html.js .r.vu{opacity:1;transform:none}
     </div>
     <div class="faq" id="faq">
       <details class="r"><summary>Je ne sais pas coder, c’est un problème&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Les sites et les apps se construisent avec l’IA, sans écrire de code.</p></details>
-      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel. Tu réserves cet appel pour 9,99&nbsp;€, remboursés si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours.</p></details>
+      <details class="r"><summary>Combien ça coûte&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Le prix d’un resto, grâce au partenariat avec un logiciel IA. On te donne le détail pendant l’appel.<span class="si-payant"> Tu réserves cet appel pour 9,99&nbsp;€, remboursés si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours.</span><span class="si-gratuit"> L’appel, lui, est gratuit.</span></p></details>
       <details class="r"><summary>Combien de temps par jour&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Une à deux heures par jour pendant 7 jours.</p></details>
       <details class="r"><summary>Il me faut une entreprise&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Pour facturer ton premier client, il te faudra un statut, par exemple une micro-entreprise. On t’explique comment faire.</p></details>
-      <details class="r"><summary>C’est garanti&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Le programme te donne la méthode, les outils et les scripts. Le résultat dépend de ton travail. Ce que je te rembourse, ce sont les 9,99&nbsp;€ de ta réservation, si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours (conditions dans nos CGV).</p></details>
+      <details class="r"><summary>C’est garanti&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Non. Le programme te donne la méthode, les outils et les scripts. Le résultat dépend de ton travail.<span class="si-payant"> Ce que je te rembourse, ce sont les 9,99&nbsp;€ de ta réservation, si tu n’as pas trouvé ton premier client au bout de 7&nbsp;jours (conditions dans nos CGV).</span></p></details>
       <details class="r"><summary>Qui va m’appeler&nbsp;?<span class="plus" aria-hidden="true"></span></summary><p>Un membre de l’équipe d’Anthony, dans les 10 minutes, pour répondre à tes questions et voir si c’est fait pour toi.</p></details>
     </div>
   </div>
@@ -927,7 +932,7 @@ html.js .r.vu{opacity:1;transform:none}
 
     <div class="merci" id="blocMerci" hidden tabindex="-1" role="status">
       <span class="rond-merci"><svg class="i"><use href="#i-coche"/></svg></span>
-      <h2 style="line-height:1.35">C’est payé.<br><span class="aplat">Ton téléphone va sonner.</span></h2>
+      <h2 style="line-height:1.35" id="merciTitre"><span class="si-payant">C’est payé.</span><span class="si-gratuit">C’est noté.</span><br><span class="aplat" id="merciAplat">Ton téléphone va sonner.</span></h2>
       <p id="merciTexte">Garde-le en main. Un membre de l’équipe d’Anthony t’appelle dans les prochaines minutes, depuis un numéro inconnu&nbsp;: <strong>décroche</strong>.</p>
     </div>
   </div>
@@ -980,6 +985,14 @@ var LIENS = { mentions: '/legal#mentions', cgv: '/legal#cgv', confidentialite: '
    10 minutes » à toute heure. jours : 0 = dimanche … 6 = samedi.
    Ex. { jours: [1,2,3,4,5,6], debut: 9, fin: 21 } */
 var HORAIRES = null;   // [À FOURNIR]
+
+/* Le lien gratuit : www.iamoneyclub-starter.com/appel. Même page, sans
+   paiement : le lead part directement dans la Liste du jour. Ses visites et
+   ses leads sont comptés à part dans l'onglet Sources du CRM (origine
+   « appel-<source> », par exemple appel-meta). Appels de 9 h à 23 h,
+   heure de Paris : en dehors, on annonce le rappel à 9 h. */
+var GRATUIT = /^\/appel\/?$/i.test(location.pathname);
+var HORAIRES_GRATUIT = { debut: 9, fin: 23 };
 
 /* ------------------------------------------------------------
    Indicatifs téléphoniques (repris des templates). Le numéro part
@@ -1156,7 +1169,7 @@ function messageHorsHoraires(){
       var alt = q.get('src');
       var m = location.pathname.match(/^\/([A-Za-z0-9_-]{1,40})\/?$/);
       if (alt) s.ref = alt.slice(0, 120);
-      else if (m && m[1] !== 'index') s.ref = m[1].toLowerCase();
+      else if (m && m[1] !== 'index' && m[1].toLowerCase() !== 'appel') s.ref = m[1].toLowerCase();
       if (s.ref) trouve = true;
     }
     return trouve ? s : null;
@@ -1174,6 +1187,13 @@ function messageHorsHoraires(){
     return {};
   }
   var SUIVI = suivi();
+  // Sur le lien gratuit, l'origine est préfixée (appel-meta, appel-tiktok…)
+  // pour ne pas se mélanger avec le lien à 9,99 €. Seulement pour cette
+  // visite : ce qui est retenu dans le navigateur reste l'origine brute.
+  if (GRATUIT){
+    var base = (SUIVI.utm_source || SUIVI.ref || '').toLowerCase();
+    SUIVI = Object.assign({}, SUIVI, { utm_source: base ? 'appel-' + base : 'appel' });
+  }
   CLES.forEach(function(k){ document.getElementById('h_' + k).value = SUIVI[k] || ''; });
   if (SUIVI.ref) suivre('Visite · ' + SUIVI.ref);
 
@@ -1378,12 +1398,13 @@ function messageHorsHoraires(){
   var apercu = document.getElementById('telApercu');
   var erreur = document.getElementById('erreur');
   var bouton = document.getElementById('envoyer');
-  var PAIEMENT = !!WHOP_PLAN_ID && !!WHOP_ACCOUNT_ID;
+  var PAIEMENT = !GRATUIT && !!WHOP_PLAN_ID && !!WHOP_ACCOUNT_ID;
   var paiement = null;
   if (PAIEMENT){
     bouton.firstChild.textContent = 'Obtenir l’accès - 9,99\u00a0€ ';
     document.getElementById('etiquetteForm').textContent = 'Étape 1 — Tes coordonnées';
   }
+  if (GRATUIT) bouton.firstChild.textContent = 'Être appelé gratuitement ';
   var libelleBouton = bouton.innerHTML;
   var choix  = document.getElementById('situation');
   var CHAMPS = ['firstName', 'lastName', 'phone', 'email'];
@@ -1502,6 +1523,7 @@ function messageHorsHoraires(){
   function montrerMerci(){
     var hors = messageHorsHoraires();
     if (hors) document.getElementById('merciTexte').textContent = hors;
+    if (GRATUIT) merciGratuit();
     document.getElementById('blocFormulaire').hidden = true;
     document.getElementById('blocPaiement').hidden = true;
     document.getElementById('blocVerif').hidden = true;
@@ -1509,6 +1531,21 @@ function messageHorsHoraires(){
     merci.hidden = false;
     merci.focus({ preventScroll: true });
     document.getElementById('formulaire').scrollTop = 0;
+  }
+
+  /* Lien gratuit : appel dans les 10 minutes de 9 h à 23 h (heure de
+     Paris). En dehors, le rappel est annoncé pour 9 h. */
+  function merciGratuit(){
+    var h = parseInt(new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: 'numeric', hourCycle: 'h23' }).format(new Date()), 10);
+    var texte = document.getElementById('merciTexte');
+    if (h >= HORAIRES_GRATUIT.debut && h < HORAIRES_GRATUIT.fin){
+      document.getElementById('merciAplat').textContent = 'Ton téléphone va sonner.';
+      texte.innerHTML = 'Garde-le en main. Un membre de l’équipe d’Anthony t’appelle dans les 10 minutes, depuis un numéro inconnu&nbsp;: <strong>décroche</strong>.';
+    } else {
+      var quand = h >= HORAIRES_GRATUIT.fin ? 'demain matin' : 'ce matin';
+      document.getElementById('merciAplat').textContent = 'On t’appelle ' + quand + '.';
+      texte.innerHTML = 'Il est tard&nbsp;: un membre de l’équipe d’Anthony t’appelle ' + quand + ' dès ' + HORAIRES_GRATUIT.debut + '&nbsp;h, depuis un numéro inconnu. <strong>Décroche</strong>.';
+    }
   }
 
   /* Le paiement Whop, dans la fenêtre (Whop Elements). Le navigateur ne fait
